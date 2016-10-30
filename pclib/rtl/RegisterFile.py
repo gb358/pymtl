@@ -13,10 +13,12 @@ class RegisterFile( Model ):
                    const_zero=False ):
 
     addr_nbits  = clog2( nregs )
-
-    s.rd_addr  = [ InPort ( addr_nbits ) for _ in range(rd_ports) ]
-    s.rd_data  = [ OutPort( dtype )      for _ in range(rd_ports) ]
-
+    if rd_ports == 1:
+      s.rd_addr  = InPort( addr_nbits )
+      s.rd_data  = InPort( dtype )
+    else:
+      s.rd_addr  = [ InPort ( addr_nbits ) for _ in range(rd_ports) ]
+      s.rd_data  = [ OutPort( dtype )      for _ in range(rd_ports) ]
     if wr_ports == 1:
       s.wr_addr  = InPort( addr_nbits )
       s.wr_data  = InPort( dtype )
@@ -28,13 +30,28 @@ class RegisterFile( Model ):
 
     s.regs = [ Wire( dtype ) for _ in range( nregs ) ]
 
-    #-------------------------------------------------------------------
-    # Combinational read logic
-    #-------------------------------------------------------------------
 
-    # constant zero
+    # Select read logic depending on if this register file should have
+    # a constant zero register or not, or single port!
+    
+    #-------------------------------------------------------------------
+    # Combination read logic, single read port, constant zero
+    #-------------------------------------------------------------------
+    if const_zero and rd_ports == 1:
 
-    if const_zero:
+      @s.combinational
+      def comb_logic():
+        for i in range( rd_ports ):
+          assert s.rd_addr < nregs
+          if s.rd_addr == 0:
+            s.rd_data.value = 0
+          else:
+            s.rd_data.value = s.regs[ s.rd_addr ]
+            
+    #-------------------------------------------------------------------
+    # Combination read logic, multiple read port, constant zero
+    #-------------------------------------------------------------------  
+    elif const_zero:
 
       @s.combinational
       def comb_logic():
@@ -44,7 +61,21 @@ class RegisterFile( Model ):
             s.rd_data[i].value = 0
           else:
             s.rd_data[i].value = s.regs[ s.rd_addr[i] ]
+            
+    #-------------------------------------------------------------------
+    # Combination read logic, single read port
+    #-------------------------------------------------------------------
+    elif rd_ports == 1:
 
+      @s.combinational
+      def comb_logic():
+        for i in range( rd_ports ):
+          assert s.rd_addr < nregs
+          s.rd_data.value = s.regs[ s.rd_addr ]
+          
+    #-------------------------------------------------------------------
+    # Combination read logic, multiple read port
+    #-------------------------------------------------------------------
     else:
 
       @s.combinational

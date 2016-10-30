@@ -44,14 +44,14 @@ def test_regfile_1R1W( dump_vcd, test_verilog ):
   # Define functions mapping the test vector to ports in model
 
   def tv_in( model, test_vector ):
-    model.rd_addr[0].value = test_vector[0]
+    model.rd_addr.value    = test_vector[0]
     model.wr_en.value      = test_vector[2]
     model.wr_addr.value    = test_vector[3]
     model.wr_data.value    = test_vector[4]
 
   def tv_out( model, test_vector ):
     if test_vector[1] != '?':
-      assert model.rd_data[0].value == test_vector[1]
+      assert model.rd_data.value == test_vector[1]
 
   # Run the test
 
@@ -88,14 +88,14 @@ def test_regfile_1R1Wconst0( dump_vcd, test_verilog ):
   # Define functions mapping the test vector to ports in model
 
   def tv_in( model, test_vector ):
-    model.rd_addr[0].value = test_vector[0]
+    model.rd_addr.value    = test_vector[0]
     model.wr_en.value      = test_vector[2]
     model.wr_addr.value    = test_vector[3]
     model.wr_data.value    = test_vector[4]
 
   def tv_out( model, test_vector ):
     if test_vector[1] != '?':
-      assert model.rd_data[0].value == test_vector[1]
+      assert model.rd_data.value == test_vector[1]
 
   # Run the test
 
